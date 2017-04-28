@@ -55,6 +55,8 @@
 				allowed = allowed.replace( ']', ',accesskey,charset,dir,id,lang,name,rel,tabindex,title,type,download]{*}(*)' );
 			if ( CKEDITOR.dialog.isTabEnabled( editor, 'link', 'target' ) )
 				allowed = allowed.replace( ']', ',target,onclick]' );
+			if ( CKEDITOR.dialog.isTabEnabled( editor, 'link', 'integration' ) )
+				allowed = allowed.replace( ']', ',data-integration,data-longitude,data-latitude]' );
 
 			// Add the link and unlink buttons.
 			editor.addCommand( 'link', new CKEDITOR.dialogCommand( 'link', {
@@ -229,6 +231,12 @@
 		charset: 'advCharset',
 		style: 'advStyles',
 		rel: 'advRel'
+	};
+
+	var integrationAttrNames = {
+		'data-integration': 'intType',
+		'data-longitude': 'intLongitude',
+		'data-latitude': 'intLatitude'
 	};
 
 	function unescapeSingleQuote( str ) {
@@ -534,13 +542,21 @@
 					retval.download = true;
 				}
 
-				var advanced = {};
+				var advanced = {},
+					integration = {};
 
 				for ( var a in advAttrNames ) {
 					var val = element.getAttribute( a );
 
 					if ( val )
 						advanced[ advAttrNames[ a ] ] = val;
+				}
+
+				for ( var a in integrationAttrNames ) {
+					var val = element.getAttribute( a );
+
+					if ( val )
+						integration[ integrationAttrNames[ a ] ] = val;
 				}
 
 				var advName = element.data( 'cke-saved-name' ) || advanced.advName;
@@ -550,6 +566,10 @@
 
 				if ( !CKEDITOR.tools.isEmpty( advanced ) )
 					retval.advanced = advanced;
+
+				if ( !CKEDITOR.tools.isEmpty( integration ) )
+					retval.integration = integration;
+
 			}
 
 			return retval;
@@ -691,6 +711,22 @@
 					set[ 'data-cke-saved-name' ] = set.name;
 			}
 
+			// Integrationattributes.
+			if ( data.integration && data.integration.intType !== '') {
+				var intType = data.integration.intType;
+
+				for ( var a in integrationAttrNames ) {
+					var variableName = integrationAttrNames[ a ];
+
+					if(intType == 'maps' || (variableName != 'intLatitude' && variableName != 'intLongitude')) {
+						var val = data.integration[variableName];
+
+						if (val)
+							set[a] = val;
+					} 
+				}
+			}
+
 			// Browser need the "href" fro copy/paste link to work. (#6641)
 			if ( set[ 'data-cke-saved-href' ] )
 				set.href = set[ 'data-cke-saved-href' ];
@@ -705,6 +741,9 @@
 
 			if ( data.advanced )
 				CKEDITOR.tools.extend( removed, advAttrNames );
+
+			if ( data.integration )
+				CKEDITOR.tools.extend( removed, integrationAttrNames );
 
 			// Remove all attributes which are not currently set.
 			for ( var s in set )

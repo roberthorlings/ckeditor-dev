@@ -26,6 +26,15 @@ CKEDITOR.plugins.setLang( 'link', 'en', {
 	emailSubject: 'Message Subject',
 	id: 'Id',
 	info: 'Link Info',
+	integration: {
+		title: 'Integrations',
+		label: 'Integrations',
+		type: 'Type',
+		maps: 'Google maps',
+		gng: 'Guide and Go',
+		latitude: 'Latitude',
+		longitude: 'Longitude'
+	},
 	langCode: 'Language Code',
 	langDir: 'Language Direction',
 	langDirLTR: 'Left to Right (LTR)',

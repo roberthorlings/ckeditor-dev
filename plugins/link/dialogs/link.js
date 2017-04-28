@@ -76,9 +76,29 @@
 				dialog.layout();
 			};
 
+		var integrationTypeChanged = function() {
+			var featuresElement = this.getDialog().getContentElement('integration', 'mapFeatures');
+			var value = this.getValue();
+
+
+			if(featuresElement) {
+				featuresElement = featuresElement.getElement();
+				featuresElement.hide();
+
+				switch(value) {
+					case 'maps':
+						featuresElement.show();
+						break;
+					default:
+						featuresElement.hide();
+						break;
+				}
+			}
+		};
+
 		var setupParams = function( page, data ) {
-				if ( data[ page ] )
-					this.setValue( data[ page ][ this.id ] || '' );
+			if ( data[ page ] )
+				this.setValue( data[ page ][ this.id ] || '' );
 			};
 
 		var setupPopupParams = function( data ) {
@@ -88,6 +108,10 @@
 		var setupAdvParams = function( data ) {
 				return setupParams.call( this, 'advanced', data );
 			};
+
+		var setupIntegrationParams = function( data ) {
+			return setupParams.call( this, 'integration', data );
+		};
 
 		var commitParams = function( page, data ) {
 				if ( !data[ page ] )
@@ -103,6 +127,10 @@
 		var commitAdvParams = function( data ) {
 				return commitParams.call( this, 'advanced', data );
 			};
+
+		var commitIntegrationParams = function( data ) {
+			return commitParams.call(this, 'integration', data);
+		};
 
 		var commonLang = editor.lang.common,
 			linkLang = editor.lang.link,
@@ -641,6 +669,45 @@
 				} ]
 			},
 			{
+				id: 'integration',
+				label: linkLang.integration.label,
+				title: linkLang.integration.title,
+				elements: [{
+					type: "select",
+					id: "intType",
+					label: linkLang.integration.type,
+					style: "width : 100%;",
+					items: [
+						[commonLang.notSet, ''],
+						[linkLang.integration.maps, 'maps'],
+						[linkLang.integration.gng, 'gng']
+					],
+					onChange: integrationTypeChanged,
+					setup: setupIntegrationParams,
+					commit: commitIntegrationParams
+				},{
+					type: "vbox",
+					id: "mapFeatures",
+					children: [{
+						type: "hbox",
+						widths: ["50%", "50%"],
+						children: [{
+							id: "intLatitude",
+							type: "text",
+							label: linkLang.integration.latitude,
+							setup: setupIntegrationParams,
+							commit: commitIntegrationParams
+						}, {
+							id: "intLongitude",
+							type: "text",
+							label: linkLang.integration.longitude,
+							setup: setupIntegrationParams,
+							commit: commitIntegrationParams
+						}]
+					}]
+				}]
+			},
+			{
 				id: 'advanced',
 				label: linkLang.advanced,
 				title: linkLang.advanced,
@@ -934,6 +1001,19 @@
 
 				if ( !editor.config.linkShowTargetTab )
 					this.hidePage( 'target' ); //Hide Target tab.
+
+				// Show or hide lat/lon fields
+				var integrationType = this.getContentElement('integration', 'intType').getValue();
+				var featuresElement = this.getContentElement('integration', 'mapFeatures');
+
+				if(featuresElement) {
+					featuresElement = featuresElement.getElement();
+					if(integrationType == 'maps') {
+						featuresElement.show();
+					} else {
+						featuresElement.hide();
+					}
+				}
 			},
 			// Inital focus on 'url' field if link is of type URL.
 			onFocus: function() {
@@ -977,3 +1057,4 @@
  * @cfg {String} [emailProtection='' (empty string = disabled)]
  * @member CKEDITOR.config
  */
+
